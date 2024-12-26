@@ -1,10 +1,10 @@
-const CACHE_NAME = 'CR3A-Stock-Take-cache-v1.1';
+const CACHE_NAME = 'CR3A-Stock-Take-cache-v1.2';
 const urlsToCache = [
     '/CR3A-Stock-Take/',
     '/CR3A-Stock-Take/index.html',
     '/CR3A-Stock-Take/app.js',
     '/CR3A-Stock-Take/manifest.json',
-    '/CR3A-Stock-Take/icons/CR3aicon-192x192.png',
+    '/CR3A-Stock-Take/icons/coldroom3aicon-192x192.png',
     '/CR3A-Stock-Take/icons/icon-512x512.png'
 ];
 
