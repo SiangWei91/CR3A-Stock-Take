@@ -763,25 +763,37 @@ function submitQuantity() {
 
     currentProduct.scanned = true;
 
-    // Create timestamp in 24-hour format
+    // Create timestamp in consistent format
     const now = new Date();
-    const date = now.toLocaleDateString(); // e.g., "11/11/2024"
+    const day = now.getDate().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const year = now.getFullYear();
     const time = now.toLocaleTimeString('en-GB', { 
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
     });
+    
+    const formattedTimestamp = `${day}/${month}/${year} ${time}`;
+    
     const record = {
-        timestamp: `${date} ${time}`,
+        timestamp: formattedTimestamp,
         items: [{
             name: currentProduct.name,
             packaging: currentProduct.packaging,
             boxQuantity: boxQuantity,
             pieceQuantity: pieceQuantity,
-            timestamp: `${date} ${time}`
+            timestamp: formattedTimestamp
         }]
     };
+
+    scanRecords.unshift(record);
+    renderRecords();
+    renderProducts();
+    updateProgress();
+    closeModal();
+}
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/CR3A-Stock-Take/service-worker.js').then(reg => {
     reg.update();
