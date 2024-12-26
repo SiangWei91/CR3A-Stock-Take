@@ -763,28 +763,23 @@ function submitQuantity() {
 
     currentProduct.scanned = true;
 
-    // Create timestamp in consistent format
+    // Create timestamp in 24-hour format
     const now = new Date();
-    const day = now.getDate().toString().padStart(2, '0');
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const year = now.getFullYear();
+    const date = now.toLocaleDateString(); // e.g., "11/11/2024"
     const time = now.toLocaleTimeString('en-GB', { 
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
     });
-    
-    const formattedTimestamp = `${day}/${month}/${year} ${time}`;
-    
     const record = {
-        timestamp: formattedTimestamp,
+        timestamp: `${date} ${time}`,
         items: [{
             name: currentProduct.name,
             packaging: currentProduct.packaging,
             boxQuantity: boxQuantity,
             pieceQuantity: pieceQuantity,
-            timestamp: formattedTimestamp
+            timestamp: `${date} ${time}`
         }]
     };
 
