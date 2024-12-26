@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A simple PWA barcode scanner">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="/CR3A-Stock-Take/manifest.json">
+    <title>Coldroom 3A Stock Take</title>
+    <style>
+        * { box-sizing: border-box; }
+body { 
+    margin: 0;
+    padding: 10px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f5f7fa;
+    padding-bottom: 50px;
+    color: #2c3e50;
+}
+
+.page {
+    display: none;
+    min-height: calc(100vh - 80px);
+    padding-bottom: 70px;
+}
+
+.page.active {
+    display: block;
+}
+
+.header {
+    background: #2c3e50;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 3px 6px rgba(44, 62, 80, 0.1);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: white;
+}
+#progressText {
+    color: white;  /* Makes the text white */
+    font-size: 0.9rem;  /* Optional: adjust size for better visibility */
+    margin-top: 5px;  /* Optional: adds some spacing from the progress bar */
+    display: block;  /* Ensures the text is on its own line */
+}
+.progress {
+    height: 20px;
+    background: #edf2f7;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+    height: 100%;
+    background: #3498db;
+    transition: width 0.4s ease;
+}
+
+.input-section {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(44, 62, 80, 0.08);
+}
+
+.input-section input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.input-section input:focus {
+    outline: none;
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+}
+
+.product-list {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 70px;
+}
+
+.product-item {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(44, 62, 80, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-item:active {
+    transform: scale(0.98);
+}
+
+.product-item h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(44, 62, 80, 0.5);
+    z-index: 2000;
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    box-shadow: 0 4px 6px rgba(44, 62, 80, 0.1);
+}
+
+.quantity-input {
+    display: grid;
+    gap: 12px;
+    margin: 15px 0;
+}
+
+.quantity-input label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.quantity-input input {
+    padding: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.quantity-input input:focus {
+    outline: none;
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+}
+
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn-group button {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-group button:active {
+    transform: scale(0.98);
+}
+
+.btn-confirm { 
+    background: #2c3e50; 
+}
+
+.btn-confirm:active {
+    background: #243444;
+}
+
+.btn-cancel { 
+    background: #64748b; 
+}
+
+.btn-cancel:active {
+    background: #4b5563;
+}
+
+.nav-buttons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    box-shadow: 0 -2px 6px rgba(44, 62, 80, 0.08);
+}
+
+.nav-buttons button {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #2c3e50;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-buttons button:active {
+    background: #243444;
+    transform: scale(0.98);
+}
+
+/* Add hover effect */
+.nav-buttons button:hover {
+    background: #34495e;
+}
+.records-list {
+    margin-bottom: 40px; /* Reduced from 70px */
+}
+.record-group {
+    background: white;
+    padding: 12px; /* Reduced from 16px */
+    border-radius: 6px; /* Reduced from 8px */
+    margin-bottom: 8px; /* Reduced from 12px */
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 1px 3px rgba(44, 62, 80, 0.05); /* Reduced shadow */
+}
+.record-group:active {
+    transform: scale(0.99); /* Slightly reduced scale effect */
+    background-color: #f8fafc;
+}
+
+.record-time {
+    font-weight: 600;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+    color: #2c3e50;
+}
+
+.record-item {
+    padding: 6px 0;
+    border-bottom: 1px solid #edf2f7;
+    margin: 3px 0; /* Adjust the value as needed */
+}
+
+
+.record-item:last-child {
+    border-bottom: none;
+}
+
+.records-quantity-group {
+    margin-top: 10px;
+}
+
+.records-quantity-row {
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+}
+
+.records-quantity-label {
+    min-width: 90px;
+    color: #64748b;
+}
+
+.records-quantity-value {
+    margin-left: 10px;
+    color: #2c3e50;
+}
+
+.records-quantity-input {
+    width: 70px;
+    padding: 6px 8px;
+    border: 1px solid #2c3e50;
+    border-radius: 4px;
+    font-size: inherit;
+    margin-left: 6px;
+}
+
+.editing {
+    background-color: #f1f5f9;
+}
+
+.loading {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(44, 62, 80, 0.5);
+    z-index: 3000;
+    backdrop-filter: blur(2px);
+}
+
+.loading-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(44, 62, 80, 0.1);
+}
+
+.spinner {
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #2c3e50;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 12px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.submit-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 12px 0 70px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(44, 62, 80, 0.08);
+}
+
+.submit-section select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #2c3e50;
+    background: white;
+    transition: border-color 0.2s ease;
+}
+
+.submit-section select:focus {
+    outline: none;
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+}
+
+.submit-section button {
+    padding: 12px 24px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.submit-section button:active {
+    background: #243444;
+    transform: scale(0.98);
+}
+    </style>
+</head>
+<body>
+    <div id="scanPage" class="page active">
+        <div class="header">
+            <h1>CR3A房库存盘点 | CR3A Stock Take</h1>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <span id="progressText">0/0 完成</span>
+        </div>
+
+        <div class="input-section">
+            <input type="text" id="barcodeInput" placeholder="扫描条码 | Scan Barcode" autofocus>
+        </div>
+
+        <div class="product-list" id="productList">
+            <!-- 产品列表将通过 JavaScript 动态生成 -->
+        </div>
+
+        <div class="modal" id="quantityModal">
+            <div class="modal-content">
+                <h2 id="modalProductName"></h2>
+                <p id="modalPackaging"></p>
+                <div class="quantity-input">
+                    <label>箱数量 | Ctn Qty：</label>
+                    <input type="number" id="boxQuantityInput" placeholder="输入箱数 | Input Ctn Qty">
+                    <label>散货数量 | Pkt Qty：</label>
+                    <input type="number" id="pieceQuantityInput" placeholder="输入散货数 | Input Pkt Qty">
+                </div>
+                <div class="btn-group">
+                    <button class="btn-confirm" onclick="submitQuantity()">确认 | Confirm</button>
+                    <button class="btn-cancel" onclick="closeModal()">取消 | Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="recordsPage" class="page">
+        <div class="header">
+            <h1>盘点记录 | Stock Take Record</h1>
+        </div>
+        <div class="records-list" id="recordsList">
+            <!-- Records will be generated here -->
+        </div>
+        <div class="submit-section">
+            <select id="counterSelect">
+                <option value="">盘点人员 | Operator</option>
+                <option value="MaTianXiang">Ma Tian Xiang</option>
+                <option value="WangRuiBiao">Wang Rui Biao</option>
+                <option value="WangBaoYi">Wang Bao Yi</option>
+                <option value="ChenQiang">Chen Qiang</option>
+                <option value="ChenChuan">Chen Chuan</option>
+                <option value="Han">Han</option>
+                <option value="New">New worker 新员工</option>
+            </select>
+            <button onclick="submitToGoogleSheet()">保存 | Save</button>
+        </div>
+    </div>
+
+    <div class="loading" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingMessage">正在提交数据 | Loading...</p>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button onclick="showPage('scan')">盘点 | Stock Take</button>
+        <button onclick="showPage('records')">记录 | Record</button>
+    </div>
+
+    <script src="app.js"></script>
+
+<script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/CR3A-Stock-Take/service-worker.js')
+          .then(function(registration) {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch(function(error) {
+            console.log('Service Worker registration failed:', error);
+          });
+      }
+    </script>
+</body>
+</html>
