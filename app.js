@@ -417,19 +417,37 @@ function updateProgress() {
 
 // 渲染盘点记录
 function formatDateToDDMMYYYY(dateString) {
+    // First, split the dateString into date and time parts
+    const [datePart, timePart] = dateString.split(' ');
+    
+    // Check if the date is already in DD/MM/YYYY format
+    if (datePart.includes('/')) {
+        // If it's already in the correct format, just return the original string
+        return dateString;
+    }
+    
+    // Otherwise, parse the date
     const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+        console.error('Invalid date:', dateString);
+        return 'Invalid Date';
+    }
+    
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    // Use hour24 option to ensure 24-hour format
     const time = date.toLocaleTimeString('en-GB', { 
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
     });
+    
     return `${day}/${month}/${year} ${time}`;
 }
+
 
 
 // Updated renderRecords function
@@ -764,13 +782,6 @@ function submitQuantity() {
             timestamp: `${date} ${time}`
         }]
     };
-
-    scanRecords.unshift(record);
-    renderRecords();
-    renderProducts();
-    updateProgress();
-    closeModal();
-}
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/CR3A-Stock-Take/service-worker.js').then(reg => {
     reg.update();
