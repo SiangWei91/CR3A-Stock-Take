@@ -420,13 +420,12 @@ function formatDateToDDMMYYYY(dateString) {
     // First, split the dateString into date and time parts
     const [datePart, timePart] = dateString.split(' ');
     
-    // Check if the date is already in DD/MM/YYYY format
-    if (datePart.includes('/')) {
-        // If it's already in the correct format, just return the original string
+    // If the date is already in DD/MM/YYYY format, return as is
+    if (datePart.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
         return dateString;
     }
     
-    // Otherwise, parse the date
+    // Otherwise, parse the date and convert
     const date = new Date(dateString);
     
     // Check if date is valid
@@ -438,7 +437,7 @@ function formatDateToDDMMYYYY(dateString) {
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    const time = date.toLocaleTimeString('en-GB', { 
+    const time = timePart || date.toLocaleTimeString('en-GB', { 
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
@@ -448,7 +447,11 @@ function formatDateToDDMMYYYY(dateString) {
     return `${day}/${month}/${year} ${time}`;
 }
 
-
+// Convert date format for Google Sheets submission
+function convertDateFormat(dateStr) {
+    // Already in DD/MM/YYYY format, return as is
+    return dateStr;
+}
 
 // Updated renderRecords function
 function renderRecords() {
@@ -665,12 +668,15 @@ async function submitToGoogleSheet() {
     loadingOverlay.style.display = 'block';
 
     try {
-        function convertDateFormat(dateStr) {
-            const parts = dateStr.split('/');
-            if (parts.length === 3) {
-                return `${parts[1]}/${parts[0]}/${parts[2]}`;
-            }
-            return dateStr;
+        function formatDateForGoogleSheets(dateStr) {
+            // Extract date part (before the space)
+            const [datePart, timePart] = dateStr.split(' ');
+            
+            // Split the date into components
+            const [day, month, year] = datePart.split('/');
+            
+            // Format as DD/MM/YYYY explicitly
+            return `${day}/${month}/${year}`;
         }
 
         const data = scanRecords.flatMap(record => 
@@ -683,7 +689,7 @@ async function submitToGoogleSheet() {
                 
                 return {
                     sheetName: LOCATION,
-                    date: convertDateFormat(date),
+                     date: formatDateForGoogleSheets(item.timestamp),  // Use new format function
                     time: time,
                     name: item.name,
                     packaging: item.packaging,
@@ -763,23 +769,29 @@ function submitQuantity() {
 
     currentProduct.scanned = true;
 
-    // Create timestamp in 24-hour format
+    // Create timestamp with correct format
     const now = new Date();
-    const date = now.toLocaleDateString(); // e.g., "11/11/2024"
+    const day = now.getDate().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const year = now.getFullYear();
     const time = now.toLocaleTimeString('en-GB', { 
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
     });
+    
+    const formattedDate = `${day}/${month}/${year}`;
+    const timestamp = `${formattedDate} ${time}`;
+
     const record = {
-        timestamp: `${date} ${time}`,
+        timestamp: timestamp,
         items: [{
             name: currentProduct.name,
             packaging: currentProduct.packaging,
             boxQuantity: boxQuantity,
             pieceQuantity: pieceQuantity,
-            timestamp: `${date} ${time}`
+            timestamp: timestamp
         }]
     };
 
