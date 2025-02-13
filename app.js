@@ -19,15 +19,6 @@ const products = [
         scanned: false
     },
     {
-        barcode: "10250",
-        name: "菜卷(50's) FISH VEGETABLE ROLL",
-        packaging: "50's/box",
-        skus: [
-            { type: "PKT", name: "菜卷(50's) FISH VEGETABLE ROLL", packaging: "50's/box", itemCode: "10250" }
-        ],
-        scanned: false
-    },
-    {
         barcode: "10801",
         name: "鱼肉(1kg) FISH PASTE",
         packaging: "1kg/pkt",
