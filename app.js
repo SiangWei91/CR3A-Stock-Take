@@ -45,6 +45,15 @@ const products = [
         ],
         scanned: false
     },
+{
+        barcode: "10802",
+        name: "鱼肉(200g) FISH PASTE",
+        packaging: "2kg/pkt",
+        skus: [
+            { type: "PKT", name: "鱼肉(200g) FISH PASTE", packaging: "200g/pkt", itemCode: "10802" }
+        ],
+        scanned: false
+    },
     {
         barcode: "40350",
         name: "黄尾鱼丸(10's) FRESH FISH BALL",
