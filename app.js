@@ -28,24 +28,6 @@ const products = [
         scanned: false
     },
     {
-        barcode: "10350",
-        name: "鱼卷(50's) FISH ROLL",
-        packaging: "50's/box",
-        skus: [
-            { type: "PKT", name: "鱼卷(50's) FISH ROLL", packaging: "50's/box", itemCode: "10350" }
-        ],
-        scanned: false
-    },
-    {
-        barcode: "10450",
-        name: "鱼片(50'S) FISH SLICE",
-        packaging: "50's/box",
-        skus: [
-            { type: "PKT", name: "鱼片(50'S) FISH SLICE", packaging: "50's/box", itemCode: "10450" }
-        ],
-        scanned: false
-    },
-    {
         barcode: "10801",
         name: "鱼肉(1kg) FISH PASTE",
         packaging: "1kg/pkt",
@@ -69,15 +51,6 @@ const products = [
         packaging: "10's/pkt",
         skus: [
             { type: "PKT", name: "黄尾鱼丸(10's) FRESH FISH BALL", packaging: "10's/pkt", itemCode: "40350" }
-        ],
-        scanned: false
-    },
-    {
-        barcode: "40351",
-        name: "黄尾鱼丸(50's) FRESH FISH BALL",
-        packaging: "50's/pkt",
-        skus: [
-            { type: "PKT", name: "黄尾鱼丸(50's) FRESH FISH BALL", packaging: "50's/pkt", itemCode: "40351" }
         ],
         scanned: false
     },
