@@ -669,13 +669,8 @@ async function submitToGoogleSheet() {
 
     try {
         function formatDateForGoogleSheets(dateStr) {
-            // Extract date part (before the space)
             const [datePart, timePart] = dateStr.split(' ');
-            
-            // Split the date into components
             const [day, month, year] = datePart.split('/');
-            
-            // Format as DD/MM/YYYY explicitly
             return `${day}/${month}/${year}`;
         }
 
@@ -689,7 +684,7 @@ async function submitToGoogleSheet() {
                 
                 return {
                     sheetName: LOCATION,
-                     date: formatDateForGoogleSheets(item.timestamp),  // Use new format function
+                    date: formatDateForGoogleSheets(item.timestamp),
                     time: time,
                     name: item.name,
                     packaging: item.packaging,
@@ -702,14 +697,12 @@ async function submitToGoogleSheet() {
             })
         );
 
-        // Check internet connection
         if (!checkInternetConnection()) {
             saveToSessionStorage(data);
             showCustomAlert('无网络连接。数据已保存，将在有网络时自动提交。');
             return;
         }
 
-        // Try to submit any pending data first
         const pendingSubmissions = getPendingSubmissions();
         if (pendingSubmissions.length > 0) {
             for (const pendingData of pendingSubmissions) {
@@ -723,16 +716,26 @@ async function submitToGoogleSheet() {
             }
         }
 
-        // Submit current data
         const response = await fetch('https://script.google.com/macros/s/AKfycbyJckzalJVidtiiih_aBZc_Ec-KW92eJgke5xRgIGte7hMUzvVKx4MhzSXwxzvS-28/exec', {
             method: 'POST',
             body: JSON.stringify(data)
         });
 
         if (response.ok) {
-            showCustomAlert('数据提交成功！');
+            // Reset all products' scanned status
+            products.forEach(product => {
+                product.scanned = false;
+            });
+            
+            // Clear scan records
             scanRecords = [];
+            
+            // Update UI
+            renderProducts();
             renderRecords();
+            updateProgress();
+            
+            showCustomAlert('数据提交成功！');
         } else {
             throw new Error('提交失败');
         }
