@@ -108,6 +108,15 @@ const products = [
             { type: "PKT", name: "(SP) 鱼肉(3kg) FISH PASTE", packaging: "3kg/pkt", itemCode: "10805" }
         ],
         scanned: false
+    },
+    {
+        barcode: "10804",
+        name: "鱼肉 FISH PASTE",
+        packaging: "5kg",
+        skus: [
+            { type: "PKT", name: "鱼肉 5kg FISH PASTE", packaging: "5kg/pkt", itemCode: "10804" }
+        ],
+        scanned: false
     }
 ];
 let currentProduct = null;
