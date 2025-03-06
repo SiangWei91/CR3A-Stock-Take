@@ -197,7 +197,7 @@ function createCustomAlert() {
     alertDiv.innerHTML = `
         <div class="custom-alert-content">
             <p id="alertMessage"></p>
-            <button onclick="closeCustomAlert()" class="alert-button">确定</button>
+            <button onclick="closeCustomAlert()" class="alert-button">确定 Confirm</button>
         </div>
     `;
 
@@ -271,9 +271,9 @@ function searchProduct() {
     if (product && !product.scanned) {
         showQuantityModal(product);
     } else if (product && product.scanned) {
-        showCustomAlert('此产品已经盘点过了！');
+        showCustomAlert('此产品已经盘点过了！This product has already been counted!');
     } else {
-        showCustomAlert('未找到产品！');
+        showCustomAlert('未找到产品！No product found!');
     }
 
     document.getElementById('barcodeInput').value = '';
@@ -529,8 +529,8 @@ function editRecordGroup(groupElement, recordIndex, itemIndex) {
             return; // Prevent double-saving
         }
         
-        const newBoxQuantity = parseInt(boxInput.value) || record.boxQuantity;
-        const newPieceQuantity = parseInt(pieceInput.value) || record.pieceQuantity;
+        const newBoxQuantity = boxInput.value !== '' ? parseInt(boxInput.value) : 0;
+        const newPieceQuantity = pieceInput.value !== '' ? parseInt(pieceInput.value) : 0;
         
         // Update data structure
         scanRecords[recordIndex].items[itemIndex].boxQuantity = newBoxQuantity;
@@ -547,7 +547,7 @@ function editRecordGroup(groupElement, recordIndex, itemIndex) {
         document.removeEventListener('click', handleClickOutside);
         
         // Show success message for local update
-        showCustomAlert('记录已更新！');
+        showCustomAlert('记录已更新！Record Updated!');
     }
     
     // Handle input events
@@ -637,12 +637,12 @@ async function submitToGoogleSheet() {
     const LOCATION = 'CR3A';
     
     if (!counter) {
-        showCustomAlert('请选择盘点人员！');
+        showCustomAlert('请选择盘点人员！Please choose the staff for inventory count!');
         return;
     }
     
     if (scanRecords.length === 0) {
-        showCustomAlert('没有可提交的记录！');
+        showCustomAlert('没有可提交的记录！There are no records to submit!');
         return;
     }
 
@@ -681,7 +681,7 @@ async function submitToGoogleSheet() {
 
         if (!checkInternetConnection()) {
             saveToSessionStorage(data);
-            showCustomAlert('无网络连接。数据已保存，将在有网络时自动提交。');
+            showCustomAlert('无网络连接。数据已保存，将在有网络时自动提交。No network connection. Data has been saved and will be automatically submitted when the network is available.');
             return;
         }
 
@@ -693,7 +693,7 @@ async function submitToGoogleSheet() {
                     body: JSON.stringify(pendingData)
                 });
                 if (!response.ok) {
-                    throw new Error('提交历史数据失败');
+                    throw new Error('提交历史数据失败 Historical data submission failed');
                 }
             }
         }
@@ -717,14 +717,14 @@ async function submitToGoogleSheet() {
             renderRecords();
             updateProgress();
             
-            showCustomAlert('数据提交成功！');
+            showCustomAlert('数据提交成功！Submission completed successfully!');
         } else {
-            throw new Error('提交失败');
+            throw new Error('提交失败 Failed to submit');
         }
     } catch (error) {
         console.error('Error:', error);
         saveToSessionStorage(data);
-        showCustomAlert('提交失败，数据已保存，将在下次提交时重试！');
+        showCustomAlert('提交失败，数据已保存，将在下次提交时重试！Submission failed. Data has been saved and will be retried on the next submission attempt!');
     } finally {
         loadingOverlay.style.display = 'none';
     }
@@ -734,13 +734,13 @@ async function submitToGoogleSheet() {
 window.addEventListener('online', async () => {
     const pendingSubmissions = getPendingSubmissions();
     if (pendingSubmissions.length > 0) {
-        showCustomAlert('检测到网络连接，正在提交保存的数据...');
+        showCustomAlert('检测到网络连接，正在提交保存的数据...Network connection detected, submitting saved data...');
         await submitToGoogleSheet();
     }
 });
 
 window.addEventListener('offline', () => {
-    showCustomAlert('网络连接已断开。数据将保存在本地。');
+    showCustomAlert('网络连接已断开。数据将保存在本地。Network connection has been disconnected. Data will be saved locally.');
 });
 // Also update where you create the record to store date and time separately
 function submitQuantity() {
@@ -748,7 +748,7 @@ function submitQuantity() {
     const pieceQuantity = parseInt(document.getElementById('pieceQuantityInput').value) || 0;
 
     if (boxQuantity === 0 && pieceQuantity === 0) {
-        showCustomAlert('请至少输入一个数量！');
+        showCustomAlert('请至少输入一个数量！Please enter at least one quantity!');
         return;
     }
 
