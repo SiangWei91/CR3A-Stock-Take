@@ -210,127 +210,7 @@ function createCustomAlert() {
 
     document.body.appendChild(alertDiv);
 }
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBKc0QCmUVP_WCFVt9CuQKgFPwv6HY7MiU",
-  databaseURL: "https://li-chuan-user-name-default-rtdb.asia-southeast1.firebasedatabase.app"
-};
-
-// Initialize Firebase if not already initialized
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const database = firebase.database();
-
-// Function to populate the dropdown with users from Firebase
-function populateUserDropdown() {
-  const counterSelect = document.getElementById('counterSelect');
-  
-  // Try to get cached user data first
-  const cachedData = getUsersFromCache();
-  
-  if (cachedData) {
-    // Use cached data if available and not expired
-    populateDropdownWithData(cachedData);
-    return;
-  }
-  
-  // If no valid cache, fetch from Firebase
-  // Clear existing options except the placeholder
-  while (counterSelect.options.length > 1) {
-    counterSelect.remove(1);
-  }
-  
-  // Reference to the pwauser node in the database
-  const userRef = database.ref('pwauser');
-  
-  // Get all users and populate dropdown
-  userRef.once('value')
-    .then((snapshot) => {
-      const users = [];
-      
-      snapshot.forEach((childSnapshot) => {
-        const key = childSnapshot.key; // 01, 02, etc.
-        const userData = childSnapshot.val();
-        
-        // Extract the name from the data (removing quotes if present)
-        let userName = typeof userData === 'string' ? 
-          userData.replace(/"/g, '') : 
-          (userData.name || Object.values(userData)[0]).replace(/"/g, '');
-        
-        users.push({
-          id: key,
-          name: userName
-        });
-        
-        // Create new option element - only showing the name
-        const option = document.createElement('option');
-        option.value = userName; // Value is just the name
-        option.textContent = userName; // Text is just the name
-        option.dataset.id = key; // Store the ID as a data attribute for reference if needed
-        counterSelect.appendChild(option);
-      });
-      
-      // Cache the data for 12 hours
-      cacheUsers(users);
-    })
-    .catch((error) => {
-      console.error("Error fetching users from Firebase:", error);
-      showCustomAlert('获取用户数据失败！Failed to fetch user data!');
-    });
-}
-
-// Function to cache users data for 12 hours
-function cacheUsers(users) {
-  const cacheData = {
-    timestamp: new Date().getTime(),
-    users: users
-  };
-  
-  localStorage.setItem('userCache', JSON.stringify(cacheData));
-}
-
-// Function to get users from cache if not expired (12 hours = 43200000 ms)
-function getUsersFromCache() {
-  const cachedData = localStorage.getItem('userCache');
-  
-  if (!cachedData) {
-    return null;
-  }
-  
-  const parsedData = JSON.parse(cachedData);
-  const currentTime = new Date().getTime();
-  const cacheTime = parsedData.timestamp;
-  
-  // Check if cache is expired (12 hours = 43200000 ms)
-  if (currentTime - cacheTime > 43200000) {
-    localStorage.removeItem('userCache');
-    return null;
-  }
-  
-  return parsedData.users;
-}
-document.addEventListener('DOMContentLoaded', populateUserDropdown);
-// Function to populate dropdown with cached data
-function populateDropdownWithData(users) {
-  const counterSelect = document.getElementById('counterSelect');
-  
-  // Clear existing options except the placeholder
-  while (counterSelect.options.length > 1) {
-    counterSelect.remove(1);
-  }
-  
-  // Add users to dropdown - only showing names
-  users.forEach(user => {
-    const option = document.createElement('option');
-    option.value = user.name;
-    option.textContent = user.name; // Only show the name
-    option.dataset.id = user.id; // Store the ID as a data attribute
-    counterSelect.appendChild(option);
-  });
-}
 // Function to show custom alert
 function showCustomAlert(message) {
     // Create alert elements if they don't exist
@@ -852,6 +732,127 @@ async function submitToGoogleSheet() {
         loadingOverlay.style.display = 'none';
     }
 }
+const firebaseConfig = {
+  apiKey: "AIzaSyBKc0QCmUVP_WCFVt9CuQKgFPwv6HY7MiU",
+  databaseURL: "https://li-chuan-user-name-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+// Initialize Firebase if not already initialized
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const database = firebase.database();
+
+// Function to populate the dropdown with users from Firebase
+function populateUserDropdown() {
+  const counterSelect = document.getElementById('counterSelect');
+  
+  // Try to get cached user data first
+  const cachedData = getUsersFromCache();
+  
+  if (cachedData) {
+    // Use cached data if available and not expired
+    populateDropdownWithData(cachedData);
+    return;
+  }
+  
+  // If no valid cache, fetch from Firebase
+  // Clear existing options except the placeholder
+  while (counterSelect.options.length > 1) {
+    counterSelect.remove(1);
+  }
+  
+  // Reference to the pwauser node in the database
+  const userRef = database.ref('pwauser');
+  
+  // Get all users and populate dropdown
+  userRef.once('value')
+    .then((snapshot) => {
+      const users = [];
+      
+      snapshot.forEach((childSnapshot) => {
+        const key = childSnapshot.key; // 01, 02, etc.
+        const userData = childSnapshot.val();
+        
+        // Extract the name from the data (removing quotes if present)
+        let userName = typeof userData === 'string' ? 
+          userData.replace(/"/g, '') : 
+          (userData.name || Object.values(userData)[0]).replace(/"/g, '');
+        
+        users.push({
+          id: key,
+          name: userName
+        });
+        
+        // Create new option element - only showing the name
+        const option = document.createElement('option');
+        option.value = userName; // Value is just the name
+        option.textContent = userName; // Text is just the name
+        option.dataset.id = key; // Store the ID as a data attribute for reference if needed
+        counterSelect.appendChild(option);
+      });
+      
+      // Cache the data for 12 hours
+      cacheUsers(users);
+    })
+    .catch((error) => {
+      console.error("Error fetching users from Firebase:", error);
+      showCustomAlert('获取用户数据失败！Failed to fetch user data!');
+    });
+}
+
+// Function to cache users data for 12 hours
+function cacheUsers(users) {
+  const cacheData = {
+    timestamp: new Date().getTime(),
+    users: users
+  };
+  
+  localStorage.setItem('userCache', JSON.stringify(cacheData));
+}
+
+// Function to get users from cache if not expired (12 hours = 43200000 ms)
+function getUsersFromCache() {
+  const cachedData = localStorage.getItem('userCache');
+  
+  if (!cachedData) {
+    return null;
+  }
+  
+  const parsedData = JSON.parse(cachedData);
+  const currentTime = new Date().getTime();
+  const cacheTime = parsedData.timestamp;
+  
+  // Check if cache is expired (12 hours = 43200000 ms)
+  if (currentTime - cacheTime > 43200000) {
+    localStorage.removeItem('userCache');
+    return null;
+  }
+  
+  return parsedData.users;
+}
+
+// Function to populate dropdown with cached data
+function populateDropdownWithData(users) {
+  const counterSelect = document.getElementById('counterSelect');
+  
+  // Clear existing options except the placeholder
+  while (counterSelect.options.length > 1) {
+    counterSelect.remove(1);
+  }
+  
+  // Add users to dropdown - only showing names
+  users.forEach(user => {
+    const option = document.createElement('option');
+    option.value = user.name;
+    option.textContent = user.name; // Only show the name
+    option.dataset.id = user.id; // Store the ID as a data attribute
+    counterSelect.appendChild(option);
+  });
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', populateUserDropdown);
 
 // Add event listeners for online/offline status
 window.addEventListener('online', async () => {
