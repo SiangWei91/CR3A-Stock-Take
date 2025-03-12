@@ -633,8 +633,9 @@ function getPendingSubmissions() {
 
 // Modified submit function with offline support
 async function submitToGoogleSheet() {
-    const counter = document.getElementById('counterSelect').value;
-    const LOCATION = 'CR3A';
+    const counterSelect = document.getElementById('counterSelect');
+    const counter = counterSelect.value; // This will be the name from the dropdown
+    const LOCATION = 'CR1';
     
     if (!counter) {
         showCustomAlert('请选择盘点人员！Please choose the staff for inventory count!');
@@ -674,7 +675,7 @@ async function submitToGoogleSheet() {
                     pieceQuantity: item.pieceQuantity,
                     ctnItemCode: ctnSku ? ctnSku.itemCode : '',
                     pktItemCode: pktSku ? pktSku.itemCode : '',
-                    counter: counter
+                    counter: counter // This now contains the name from the dropdown
                 };
             })
         );
@@ -696,6 +697,8 @@ async function submitToGoogleSheet() {
                     throw new Error('提交历史数据失败 Historical data submission failed');
                 }
             }
+            // Clear pending submissions after successful submission
+            sessionStorage.removeItem('pendingSubmissions');
         }
 
         const response = await fetch('https://script.google.com/macros/s/AKfycbyJckzalJVidtiiih_aBZc_Ec-KW92eJgke5xRgIGte7hMUzvVKx4MhzSXwxzvS-28/exec', {
