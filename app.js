@@ -801,3 +801,92 @@ function checkForUpdates() {
     });
   }
 }
+const FIREBASE_DB_URL = "https://li-chuan-user-name-default-rtdb.asia-southeast1.firebasedatabase.app"; // Replace with your actual database URL
+
+// Fetch users from Firebase (without SDK)
+async function fetchUsersFromFirebase() {
+  const url = `${FIREBASE_DB_URL}/pwauser.json`; // Fetches the entire 'pwauser' node
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+    const data = await response.json();
+    if (!data) throw new Error("No data found");
+
+    return Object.entries(data).map(([id, userData]) => ({
+      id,
+      name: typeof userData === "string" ? userData.replace(/"/g, "") : userData.name || Object.values(userData)[0] || "Unknown",
+    }));
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    showCustomAlert("获取用户数据失败！Failed to fetch user data!");
+    return [];
+  }
+}
+
+// Populate dropdown with users
+async function populateUserDropdown() {
+  const counterSelect = document.getElementById("counterSelect");
+
+  // Check cache first
+  const cachedData = getUsersFromCache();
+  if (cachedData) {
+    populateDropdownWithData(cachedData);
+    return;
+  }
+
+  // Clear existing options except placeholder
+  counterSelect.innerHTML = counterSelect.options[0].outerHTML;
+
+  // Fetch users from Firebase
+  const users = await fetchUsersFromFirebase();
+  if (users.length === 0) return;
+
+  users.forEach(user => {
+    const option = document.createElement("option");
+    option.value = user.name;
+    option.textContent = user.name;
+    option.dataset.id = user.id;
+    counterSelect.appendChild(option);
+  });
+
+  // Cache results for 12 hours
+  cacheUsers(users);
+}
+
+// Cache users data for 12 hours
+function cacheUsers(users) {
+  localStorage.setItem("userCache", JSON.stringify({ timestamp: Date.now(), users }));
+}
+
+// Get users from cache if valid (12 hours = 43200000 ms)
+function getUsersFromCache() {
+  const cachedData = localStorage.getItem("userCache");
+  if (!cachedData) return null;
+
+  const { timestamp, users } = JSON.parse(cachedData);
+  return Date.now() - timestamp < 43200000 ? users : (localStorage.removeItem("userCache"), null);
+}
+
+// Populate dropdown with cached data
+function populateDropdownWithData(users) {
+  const counterSelect = document.getElementById("counterSelect");
+  counterSelect.innerHTML = counterSelect.options[0].outerHTML;
+
+  users.forEach(user => {
+    const option = document.createElement("option");
+    option.value = user.name;
+    option.textContent = user.name;
+    option.dataset.id = user.id;
+    counterSelect.appendChild(option);
+  });
+}
+
+// Show custom alert (if needed)
+function showCustomAlert(message) {
+  alert(message);
+}
+
+// Load dropdown on page load
+document.addEventListener("DOMContentLoaded", populateUserDropdown);
