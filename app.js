@@ -128,8 +128,8 @@ window.onload = function() {
     renderProducts();
     updateProgress();
     document.getElementById('barcodeInput').focus();
+    populateUserDropdown(); // Add this line to populate the dropdown
 }
-
 function createCustomAlert() {
     // Create the styles
     const style = document.createElement('style');
