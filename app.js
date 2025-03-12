@@ -887,3 +887,4 @@ function populateDropdownWithData(users) {
 function showCustomAlert(message) {
   alert(message);
 }
+document.addEventListener("DOMContentLoaded", populateUserDropdown);
