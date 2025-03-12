@@ -428,19 +428,12 @@ body {
             <!-- Records will be generated here -->
         </div>
         <div class="submit-section">
-            <select id="counterSelect">
-                <option value="">盘点人员 | Operator</option>
-                <option value="MaTianXiang">Ma Tian Xiang</option>
-                <option value="WangRuiBiao">Wang Rui Biao</option>
-                <option value="WangBaoYi">Wang Bao Yi</option>
-                <option value="ChenQiang">Chen Qiang</option>
-                <option value="ChenChuan">Chen Chuan</option>
-                <option value="SURESH">SURESH</option>
-                <option value="NAY ZAW TUN">NAY ZAW TUN</option>
-                <option value="New">New worker 新员工</option>
-            </select>
-            <button onclick="submitToGoogleSheet()">保存 | Save</button>
-        </div>
+    <select id="counterSelect">
+        <option value="">盘点人员 | Operator</option>
+        <!-- Options will be populated from Firebase -->
+    </select>
+    <button onclick="submitToGoogleSheet()">保存 | Save</button>
+</div>
     </div>
 
     <div class="loading" id="loadingOverlay">
