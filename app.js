@@ -883,8 +883,4 @@ function populateDropdownWithData(users) {
   });
 }
 
-// Show custom alert (if needed)
-function showCustomAlert(message) {
-  alert(message);
-}
 document.addEventListener("DOMContentLoaded", populateUserDropdown);
