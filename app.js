@@ -883,4 +883,123 @@ function populateDropdownWithData(users) {
   });
 }
 
-document.addEventListener("DOMContentLoaded", populateUserDropdown);
+document.addEventListener("DOMContentLoaded", function() {
+    populateUserDropdown();
+    initializeSidePanel();
+});
+
+// Side Panel Logic
+let touchstartX = 0;
+let touchendX = 0;
+let touchstartY = 0; // To help distinguish scroll from swipe
+let touchendY = 0; // To help distinguish scroll from swipe
+const swipeThreshold = 50; // Minimum distance for a swipe
+const swipeEdgeArea = 50; // How close to the edge swipe must start
+
+function openSidePanel() {
+    const sidePanel = document.getElementById('sidePanel');
+    const overlay = document.getElementById('overlay');
+    if (sidePanel && overlay) {
+        sidePanel.classList.add('open');
+        overlay.classList.add('active');
+    }
+}
+
+function closeSidePanel() {
+    const sidePanel = document.getElementById('sidePanel');
+    const overlay = document.getElementById('overlay');
+    if (sidePanel && overlay) {
+        sidePanel.classList.remove('open');
+        overlay.classList.remove('active');
+    }
+}
+
+function handleSwipeGesture() {
+    const deltaX = touchendX - touchstartX;
+    const deltaY = touchendY - touchstartY;
+
+    // Check if it's primarily a horizontal swipe and not a vertical scroll
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > swipeThreshold) {
+        const sidePanel = document.getElementById('sidePanel');
+        if (!sidePanel) return;
+
+        if (deltaX > 0 && touchstartX < swipeEdgeArea && !sidePanel.classList.contains('open')) {
+            // Swipe Right from left edge to open
+            openSidePanel();
+        } else if (deltaX < 0 && sidePanel.classList.contains('open')) {
+            // Swipe Left to close (optional: can also rely on overlay click or close button)
+            // For now, let's make it simple: any significant swipe left when open closes it.
+            // More precise would be to check if swipe started inside panel or if touchendX is far left.
+            // closeSidePanel(); // Let's use button/overlay for closing first to keep swipe open simple.
+        }
+    }
+}
+
+function initializeSidePanel() {
+    const overlay = document.getElementById('overlay');
+    const closeButton = document.getElementById('closePanelBtn');
+
+    if (overlay) {
+        overlay.addEventListener('click', closeSidePanel);
+    }
+    if (closeButton) {
+        closeButton.addEventListener('click', closeSidePanel);
+    }
+
+    document.addEventListener('touchstart', function(event) {
+        touchstartX = event.changedTouches[0].screenX;
+        touchstartY = event.changedTouches[0].screenY;
+    }, { passive: true }); // Passive for performance, if not calling preventDefault
+
+    document.addEventListener('touchend', function(event) {
+        touchendX = event.changedTouches[0].screenX;
+        touchendY = event.changedTouches[0].screenY;
+        handleSwipeGesture();
+    }, { passive: true });
+
+    const refreshOperatorsButton = document.getElementById('refreshOperatorsBtn');
+    if (refreshOperatorsButton) {
+        refreshOperatorsButton.addEventListener('click', forceRefreshOperatorList);
+    }
+}
+
+async function forceRefreshOperatorList() {
+    const refreshButton = document.getElementById('refreshOperatorsBtn');
+    const originalButtonText = refreshButton ? refreshButton.textContent : "Refresh Operator List";
+
+    if (!navigator.onLine) {
+        showCustomAlert("Cannot refresh: You are offline.");
+        return;
+    }
+
+    if (refreshButton) refreshButton.textContent = "Refreshing...";
+    // Optional: Disable button refreshButton.disabled = true;
+
+    try {
+        const users = await fetchUsersFromFirebase();
+        if (users && users.length > 0) {
+            populateDropdownWithData(users);
+            cacheUsers(users);
+            showCustomAlert("Operator list updated successfully!");
+        } else if (users && users.length === 0) {
+            // Firebase returned an empty list
+            populateDropdownWithData([]); // Clear the dropdown
+            cacheUsers([]); // Cache the empty list
+            showCustomAlert("Operator list is empty on the server.");
+        } else {
+            // fetchUsersFromFirebase itself might have shown an error if it returned null due to fetch failure
+            // If it resolved to null or undefined without throwing an error that it caught itself:
+            showCustomAlert("Failed to update operator list. Server might be unreachable or returned unexpected data.");
+        }
+    } catch (error) {
+        // This catch is for errors thrown by fetchUsersFromFirebase if it doesn't handle them internally
+        console.error("Error forcing refresh of operator list:", error);
+        showCustomAlert("An error occurred while refreshing the operator list.");
+    } finally {
+        if (refreshButton) {
+            refreshButton.textContent = originalButtonText;
+            // refreshButton.disabled = false;
+        }
+        closeSidePanel(); // Close panel after attempt
+    }
+}
