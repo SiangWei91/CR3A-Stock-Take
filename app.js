@@ -801,22 +801,28 @@ function checkForUpdates() {
     });
   }
 }
-const FIREBASE_DB_URL = "https://li-chuan-user-name-default-rtdb.asia-southeast1.firebasedatabase.app"; // Replace with your actual database URL
+const SUPABASE_URL = "https://jbpvqlvlokvqpkulisxi.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpicHZxbHZsb2t2cXBrdWxpc3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNTE3NzYsImV4cCI6MjA3NTYyNzc3Nn0.cwCoHFCy3K_HdTIIk_jJUCgMXIdub2HbnxqTETBKans";
 
-// Fetch users from Firebase (without SDK)
-async function fetchUsersFromFirebase() {
-  const url = `${FIREBASE_DB_URL}/pwauser.json`; // Fetches the entire 'pwauser' node
+// Fetch users from Supabase
+async function fetchUsersFromSupabase() {
+  const url = `${SUPABASE_URL}/rest/v1/profiles?select=user_name&shift=eq.Morning&is_active=eq.true&role=eq.warehouse_staff`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
     if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
     const data = await response.json();
-    if (!data) throw new Error("No data found");
+    if (!data || data.length === 0) throw new Error("No data found");
 
-    return Object.entries(data).map(([id, userData]) => ({
-      id,
-      name: typeof userData === "string" ? userData.replace(/"/g, "") : userData.name || Object.values(userData)[0] || "Unknown",
+    return data.map((user, index) => ({
+      id: index.toString(),
+      name: user.user_name
     }));
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -839,8 +845,8 @@ async function populateUserDropdown() {
   // Clear existing options except placeholder
   counterSelect.innerHTML = counterSelect.options[0].outerHTML;
 
-  // Fetch users from Firebase
-  const users = await fetchUsersFromFirebase();
+  // Fetch users from Supabase
+  const users = await fetchUsersFromSupabase();
   if (users.length === 0) return;
 
   users.forEach(user => {
@@ -976,7 +982,7 @@ async function forceRefreshOperatorList() {
     // Optional: Disable button refreshButton.disabled = true;
 
     try {
-        const users = await fetchUsersFromFirebase();
+        const users = await fetchUsersFromSupabase();
         if (users && users.length > 0) {
             populateDropdownWithData(users);
             cacheUsers(users);
