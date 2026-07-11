@@ -875,30 +875,22 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Fetch users from Supabase
 async function fetchUsersFromSupabase() {
-  const url = `${SUPABASE_URL}/rest/v1/profiles?select=user_name&shift=eq.Morning&is_active=eq.true&role=eq.warehouse_staff`;
+  return [
+    { id: "0", name: "临时选择 (Temp Use)" }
+  ];
+}
+
+/* ORIGINAL — restore when Supabase staff fetch is re-enabled:
+async function fetchUsersFromSupabase() {
+  const url = `${SUPABASE_URL}/rest/v1/profiles?select=user_name&shift=eq.Morning&is_active=eq.true&r
+ole=eq.warehouse_staff`;
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-      }
-    });
-    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
-    const data = await response.json();
-    if (!data || data.length === 0) throw new Error("No data found");
-
-    return data.map((user, index) => ({
-      id: index.toString(),
-      name: user.user_name
-    }));
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    showCustomAlert("获取用户数据失败！Failed to fetch user data!");
     return [];
   }
 }
+*/
 
 // Populate dropdown with users
 async function populateUserDropdown() {
