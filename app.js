@@ -873,24 +873,23 @@ function checkForUpdates() {
 const SUPABASE_URL = "https://jbpvqlvlokvqpkulisxi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpicHZxbHZsb2t2cXBrdWxpc3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNTE3NzYsImV4cCI6MjA3NTYyNzc3Nn0.cwCoHFCy3K_HdTIIk_jJUCgMXIdub2HbnxqTETBKans";
 
-// Fetch users from Supabase
+// Fetch users from Supabase (via SECURITY DEFINER RPC — profiles table stays locked to anon)
 async function fetchUsersFromSupabase() {
-  return [
-    { id: "0", name: "临时选择 (Temp Use)" }
-  ];
-}
-
-/* ORIGINAL — restore when Supabase staff fetch is re-enabled:
-async function fetchUsersFromSupabase() {
-  const url = `${SUPABASE_URL}/rest/v1/profiles?select=user_name&shift=eq.Morning&is_active=eq.true&r
-ole=eq.warehouse_staff`;
-
   try {
-
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data, error } = await supabaseClient.rpc('get_stock_take_staff');
+    if (error) throw error;
+    if (!data || data.length === 0) throw new Error("No data found");
+    return data.map((user, index) => ({
+      id: index.toString(),
+      name: user.user_name
+    }));
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    showCustomAlert("获取用户数据失败! Failed to fetch user data!");
     return [];
   }
 }
-*/
 
 // Populate dropdown with users
 async function populateUserDropdown() {
