@@ -871,7 +871,7 @@ function checkForUpdates() {
   }
 }
 const SUPABASE_URL = "https://jbpvqlvlokvqpkulisxi.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpicHZxbHZsb2t2cXBrdWxpc3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNTE3NzYsImV4cCI6MjA3NTYyNzc3Nn0.cwCoHFCy3K_HdTIIk_jJUCgMXIdub2HbnxqTETBKans";
+const SUPABASE_ANON_KEY = "sb_publishable_tVkvVgunKW_MKrfYA4oSWw_VRVotURs";
 
 // Fetch users from Supabase (via SECURITY DEFINER RPC — profiles table stays locked to anon)
 async function fetchUsersFromSupabase() {
